@@ -69,7 +69,7 @@
 								$_SESSION["Session"] = $sessionNew;
 								$persistenceClient->sessionSave($sessionNew);
 
-								header("Location: User.php");
+								header("Location: UserDetails.php");
 
 								$databaseConnection->close();
 							}

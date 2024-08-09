@@ -24,7 +24,7 @@
 			<input name="UsernameToDelete"></input><br /.>
 			<br />
 			<button type="submit">Delete User</button><br />
-			<a href="User.php">Cancel</a>
+			<a href="UserDetails.php">Cancel</a>
 		</form>
 
 		<?php

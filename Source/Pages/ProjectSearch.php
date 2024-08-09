@@ -97,6 +97,8 @@
 				<table style="border:1px solid" width="100%">
 					<thead>
 						<th>Name</th>
+						<th>Organizer</th>
+						<th>Date Proposed</th>
 						<th>Pledged (USD)</th>
 						<th>Goal (USD)</th>
 					</thead>
@@ -111,12 +113,16 @@
 							$tableCell = "<td><a href='Project.php?projectID=" . $projectID . "'>" . $projectName . "</a></td>";
 							$tableRow = $tableRow . $tableCell;
 
-							$pledgesInUsd = 0;
-							$pledges = $persistenceClient->userProjectPledgesGetByProjectID($projectID);
-							foreach ($pledges as $pledge)
-							{
-								$pledgesInUsd += $pledge->pledgeAmountInUsd;
-							}
+							$userOrganizer = $persistenceClient->userGetByID($project->userIDOrganizer);
+							$tableCell = "<td><a href='UserDetails.php?userID=" . $userOrganizer->userID . "'>" . $userOrganizer->nameFull . "</a></td>";
+							$tableRow = $tableRow . $tableCell;
+
+							$timeProposed = strtotime($project->timeProposed);
+							$timeProposedFormatted = date("Y/m/d", $timeProposed);
+							$tableCell = "<td>" . $timeProposedFormatted . "</td>";
+							$tableRow = $tableRow . $tableCell;
+
+							$pledgesInUsd = $persistenceClient->userProjectPledgesSumGetByProjectID($projectID);
 							$tableCell = "<td>$". $pledgesInUsd . "</td>";
 							$tableRow = $tableRow . $tableCell;
 

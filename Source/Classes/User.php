@@ -9,23 +9,22 @@ class User
 	public $passwordHashed;
 	public $passwordResetCode;
 	public $isActive;
-	public $pledges;
 
-	public function __construct($userID, $username, $emailAddress, $passwordSalt, $passwordHashed, $passwordResetCode, $isActive, $pledges)
+	public function __construct($userID, $username, $emailAddress, $nameFull, $passwordSalt, $passwordHashed, $passwordResetCode, $isActive)
 	{
 		$this->userID = $userID;
 		$this->username = $username;
 		$this->emailAddress = $emailAddress;
+		$this->nameFull = $nameFull;
 		$this->passwordSalt = $passwordSalt;
 		$this->passwordHashed = $passwordHashed;
 		$this->passwordResetCode = $passwordResetCode;
 		$this->isActive = $isActive;
-		$this->pledges = $pledges;
 	}
 
 	public static function dummy()
 	{
-		return new User(null, null, null, null, null, null, true, array() );
+		return new User(null, null, null, null, null, null, null, true );
 	}
 
 	public static function passwordHashWithSalt($passwordAsPlaintext, $passwordSalt)

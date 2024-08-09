@@ -97,11 +97,15 @@ class PersistenceClientMySQL
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 		$queryCommand->bind_param("i", $projectID);
 		$queryCommand->execute();
-		$queryCommand->bind_result($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
+		$queryCommand->bind_result(
+			$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+		);
 
 		while ($queryCommand->fetch())
 		{
-			$returnValue = new Project($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
+			$returnValue = new Project(
+				$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+			);
 			break;
 		}
 
@@ -119,17 +123,64 @@ class PersistenceClientMySQL
 		$queryText = "select * from Project";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 		$queryCommand->execute();
-		$queryCommand->bind_result($projectID, $name, $goalInUsd, $isActive, $description);
+		$queryCommand->bind_result(
+			$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+		);
 
 		while ($queryCommand->fetch())
 		{
-			$project = new Project($projectID, $name, $goalInUsd, $isActive, $description);
+			$project = new Project(
+				$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+			);
 			$returnValues[$projectID] = $project;
 		}
 
 		$databaseConnection->close();
 
 		return $returnValues;
+	}
+
+	public function projectsGetByUserIDOrganizer($userIDOrganizer)
+	{
+		$returnValues = array();
+
+		$databaseConnection = $this->connect();
+
+		$queryText = "select * from Project where UserIDOrganizer = ?";
+		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+		$queryCommand->bind_param("i", $userIDOrganizer);
+		$queryCommand->execute();
+		$queryCommand->bind_result(
+			$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+		);
+
+		while ($queryCommand->fetch())
+		{
+			$project = new Project(
+				$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+			);
+			$returnValues[] = $project;
+		}
+
+		$databaseConnection->close();
+
+		return $returnValues;
+	}
+
+	public function projectsCountGetByUserIDOrganizer($userIDOrganizer)
+	{
+		$databaseConnection = $this->connect();
+
+		$queryText = "select count('x') from Project where UserIDOrganizer = ?";
+		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+		$queryCommand->bind_param("i", $userIDOrganizer);
+		$queryCommand->execute();
+		$queryCommand->bind_result($count);
+		$queryCommand->fetch();
+
+		$databaseConnection->close();
+
+		return $count;
 	}
 
 	public function projectsSearch($projectNamePartial, $projectsPerPage, $pageIndex)
@@ -160,11 +211,15 @@ class PersistenceClientMySQL
 		$queryCommand->bind_param("sii", $projectNamePartial, $pageOffsetInProjects, $projectsPerPage);
 
 		$queryCommand->execute();
-		$queryCommand->bind_result($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
+		$queryCommand->bind_result(
+			$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+		);
 
 		while ($queryCommand->fetch())
 		{
-			$project = new Project($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
+			$project = new Project(
+				$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+			);
 			$returnValues[$projectID] = $project;
 		}
 
@@ -327,7 +382,7 @@ class PersistenceClientMySQL
 	private function userGetByQueryCommand($queryCommand)
 	{
 		$queryCommand->execute();
-		$queryCommand->bind_result($userID, $username, $emailAddress, $passwordSalt, $passwordHashed, $passwordResetCode, $isActive);
+		$queryCommand->bind_result($userID, $username, $emailAddress, $nameFull, $passwordSalt, $passwordHashed, $passwordResetCode, $isActive);
 		$queryCommand->store_result();
 
 		$numberOfRows = $queryCommand->num_rows();
@@ -339,12 +394,10 @@ class PersistenceClientMySQL
 		{
 			$queryCommand->fetch();
 
-			$pledges = $this->userProjectPledgesGetByUserID($userID);
-
 			$userFound = new User
 			(
-				$userID, $username, $emailAddress, $passwordSalt,
-				$passwordHashed, $passwordResetCode, $isActive, $pledges
+				$userID, $username, $emailAddress, $nameFull, $passwordSalt,
+				$passwordHashed, $passwordResetCode, $isActive
 			);
 		}
 
@@ -417,7 +470,7 @@ class PersistenceClientMySQL
 
 	public function userProjectPledgesGetByProjectID($projectID)
 	{
-		$returnValue = null;
+		$returnValues = array();
 
 		$databaseConnection = $this->connect();
 
@@ -425,17 +478,39 @@ class PersistenceClientMySQL
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 		$queryCommand->bind_param("i", $projectID);
 		$queryCommand->execute();
-		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+		$queryCommand->bind_result(
+			$userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged, $isActive
+		);
 
 		while ($queryCommand->fetch())
 		{
-			$returnValue = new UserProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
-			break;
+			$pledge = new UserProjectPledge(
+				$userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged, $isActive
+			);
+			$returnValues[] = $pledge;
 		}
 
 		$databaseConnection->close();
 
-		return $returnValue;
+		return $returnValues;
+	}
+
+	public function userProjectPledgesSumGetByProjectID($projectID)
+	{
+		$returnValues = array();
+
+		$databaseConnection = $this->connect();
+
+		$queryText = "select sum(PledgeAmountInUsd) from UserProjectPledge where ProjectID = ?";
+		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+		$queryCommand->bind_param("i", $projectID);
+		$queryCommand->execute();
+		$queryCommand->bind_result($sum);
+		$queryCommand->fetch();
+
+		$databaseConnection->close();
+
+		return $sum;
 	}
 
 	public function userProjectPledgesGetByUserID($userID)
@@ -444,21 +519,37 @@ class PersistenceClientMySQL
 
 		$databaseConnection = $this->connect();
 
-		$queryText = "select * from UserProjectPledge where UserID = ? order by ProjectID";
+		$queryText = "select * from UserProjectPledge where UserID = ? and IsActive = true order by ProjectID";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 		$queryCommand->bind_param("i", $userID);
 		$queryCommand->execute();
-		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged, $isActive);
 
 		while ($row = $queryCommand->fetch())
 		{
-			$pledge = new UserProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+			$pledge = new UserProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged, $isActive);
 			$returnValues[] = $pledge;
 		}
 
 		$databaseConnection->close();
 
 		return $returnValues;
+	}
+
+	public function userProjectPledgesCountGetByUserID($userID)
+	{
+		$databaseConnection = $this->connect();
+
+		$queryText = "select count('x') from UserProjectPledge where UserID = ? and IsActive = true";
+		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+		$queryCommand->bind_param("i", $userID);
+		$queryCommand->execute();
+		$queryCommand->bind_result($count);
+		$queryCommand->fetch();
+
+		$databaseConnection->close();
+
+		return $count;
 	}
 
 	public function userProjectPledgeSave($userProjectPledge)

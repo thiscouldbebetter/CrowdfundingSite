@@ -116,7 +116,7 @@
 								$persistenceClient->sessionSave($sessionNew);
 
 								$_SESSION["Session"] = $sessionNew;
-								header("Location: User.php");
+								header("Location: UserDetails.php");
 
 								$databaseConnection->close();
 							}
