@@ -6,7 +6,7 @@ use Crowdfunding;
 
 create table User (UserID int not null auto_increment, Username text not null, EmailAddress text not null, PasswordSalt text not null, PasswordHashed text not null, PasswordResetCode text, IsActive boolean not null, primary key (UserID) );
 
-create table Project (ProjectID int not null auto_increment, UserIDOrganizer int not null, Name text not null, FundingThresholdInUsd decimal not null, IsActive boolean not null, Description text not null, primary key (ProjectID), foreign key (UserIDOrganizer) references User(UserID) );
+create table Project (ProjectID int not null auto_increment, UserIDOrganizer int not null, Name text not null, GoalInUsd decimal not null, IsActive boolean not null, DateProposed datetime not null, Description text not null, primary key (ProjectID), foreign key (UserIDOrganizer) references User(UserID) );
 
 create table UserProjectPledge (UserProductPledgeID int not null auto_increment, UserID int not null, ProjectID int not null, PledgeAmountInUsd decimal not null, TimePledged datetime not null, primary key (UserProductPledgeID), foreign key (UserID) references User(UserID), foreign key (ProjectID) references Project(ProjectID) );
 

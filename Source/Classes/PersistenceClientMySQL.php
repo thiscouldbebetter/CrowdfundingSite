@@ -31,78 +31,6 @@ class PersistenceClientMySQL
 		return $returnValue;
 	}
 
-	public function userProjectPledgeGetByID($userProjectPledgeID)
-	{
-		$returnValue = null;
-
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from UserProjectPledge where UserProjectPledgeID = ?";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $userProjectPledgeID);
-		$queryCommand->execute();
-		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd);
-
-		while ($queryCommand->fetch())
-		{
-			$returnValue = new userProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd);
-			break;
-		}
-
-		$databaseConnection->close();
-
-		return $returnValue;
-	}
-
-	public function userProjectPledgeSave($userProjectPledge)
-	{
-		$databaseConnection = $this->connect();
-
-		if ($databaseConnection->connect_error)
-		{
-			die("Could not connect to database.");
-		}
-
-		if ($userProjectPledge->userProjectPledgeID == null)
-		{
-			$queryText =
-				"insert into UserProjectPledge (UserID, ProjectID, PledgeAmountInUsd)"
-				. " values (?, ?, ?)";
-			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-			$queryCommand->bind_param
-			(
-				"iid", $userProjectPledge->userID, $userProjectPledge->projectID, $userProjectPledge->pledgeAmountInUsd
-			);
-		}
-		else
-		{
-			$queryText = "update UserProjectPledge set UserID = ?, ProjectID = ?, pledgeAmountInUsd = ? where UserProjectPledgeID = ?";
-			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-			$queryCommand->bind_param
-			(
-				"iidi", $userProjectPledge->userID, $userProjectPledge->projectID, $userProjectPledge->userProjectPledgeID
-			);
-		}
-		$didSaveSucceed = $queryCommand->execute();
-
-		if ($didSaveSucceed == false)
-		{
-			die("Could not write to database.");
-		}
-		else
-		{
-			$userProjectPledgeID = mysqli_insert_id($databaseConnection);
-			if ($userProjectPledgeID != null)
-			{
-				$userProjectPledge->userProjectPledgeID = $userProjectPledgeID;
-			}
-		}
-
-		$databaseConnection->close();
-
-		return $userProjectPledge;
-	}
-
 	public function notificationSave($notification)
 	{
 		$databaseConnection = $this->connect();
@@ -169,11 +97,11 @@ class PersistenceClientMySQL
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 		$queryCommand->bind_param("i", $projectID);
 		$queryCommand->execute();
-		$queryCommand->bind_result($projectID, $name, $goalInUsd, $isActive, $descriptin);
+		$queryCommand->bind_result($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
 
 		while ($queryCommand->fetch())
 		{
-			$returnValue = new Project($projectID, $name, $goalInUsd, $isActive, $description);
+			$returnValue = new Project($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
 			break;
 		}
 
@@ -232,11 +160,11 @@ class PersistenceClientMySQL
 		$queryCommand->bind_param("sii", $projectNamePartial, $pageOffsetInProjects, $projectsPerPage);
 
 		$queryCommand->execute();
-		$queryCommand->bind_result($projectID, $name, $goalInUsd, $isActive, $description, $dateProposed);
+		$queryCommand->bind_result($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
 
 		while ($queryCommand->fetch())
 		{
-			$project = new Project($projectID, $name, $goalInUsd, $isActive, $description, $dateProposed);
+			$project = new Project($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description);
 			$returnValues[$projectID] = $project;
 		}
 
@@ -423,29 +351,6 @@ class PersistenceClientMySQL
 		return $userFound;
 	}
 
-	public function userProjectPledgesGetByUserID($userID)
-	{
-		$returnValues = array();
-
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from UserProjectPledge where UserID = ? order by ProjectID";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $userID);
-		$queryCommand->execute();
-		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
-
-		while ($row = $queryCommand->fetch())
-		{
-			$pledge = new UserProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
-			$returnValues[] = $pledge;
-		}
-
-		$databaseConnection->close();
-
-		return $returnValues;
-	}
-
 	public function userSave($user)
 	{
 		$databaseConnection = $this->connect();
@@ -486,6 +391,125 @@ class PersistenceClientMySQL
 
 		return $user;
 	}
+
+	public function userProjectPledgeGetByID($userProjectPledgeID)
+	{
+		$returnValue = null;
+
+		$databaseConnection = $this->connect();
+
+		$queryText = "select * from UserProjectPledge where UserProjectPledgeID = ?";
+		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+		$queryCommand->bind_param("i", $userProjectPledgeID);
+		$queryCommand->execute();
+		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd);
+
+		while ($queryCommand->fetch())
+		{
+			$returnValue = new userProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd);
+			break;
+		}
+
+		$databaseConnection->close();
+
+		return $returnValue;
+	}
+
+	public function userProjectPledgesGetByProjectID($projectID)
+	{
+		$returnValue = null;
+
+		$databaseConnection = $this->connect();
+
+		$queryText = "select * from UserProjectPledge where ProjectID = ?";
+		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+		$queryCommand->bind_param("i", $projectID);
+		$queryCommand->execute();
+		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+
+		while ($queryCommand->fetch())
+		{
+			$returnValue = new UserProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+			break;
+		}
+
+		$databaseConnection->close();
+
+		return $returnValue;
+	}
+
+	public function userProjectPledgesGetByUserID($userID)
+	{
+		$returnValues = array();
+
+		$databaseConnection = $this->connect();
+
+		$queryText = "select * from UserProjectPledge where UserID = ? order by ProjectID";
+		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+		$queryCommand->bind_param("i", $userID);
+		$queryCommand->execute();
+		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+
+		while ($row = $queryCommand->fetch())
+		{
+			$pledge = new UserProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+			$returnValues[] = $pledge;
+		}
+
+		$databaseConnection->close();
+
+		return $returnValues;
+	}
+
+	public function userProjectPledgeSave($userProjectPledge)
+	{
+		$databaseConnection = $this->connect();
+
+		if ($databaseConnection->connect_error)
+		{
+			die("Could not connect to database.");
+		}
+
+		if ($userProjectPledge->userProjectPledgeID == null)
+		{
+			$queryText =
+				"insert into UserProjectPledge (UserID, ProjectID, PledgeAmountInUsd)"
+				. " values (?, ?, ?)";
+			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+			$queryCommand->bind_param
+			(
+				"iid", $userProjectPledge->userID, $userProjectPledge->projectID, $userProjectPledge->pledgeAmountInUsd
+			);
+		}
+		else
+		{
+			$queryText = "update UserProjectPledge set UserID = ?, ProjectID = ?, pledgeAmountInUsd = ? where UserProjectPledgeID = ?";
+			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
+			$queryCommand->bind_param
+			(
+				"iidi", $userProjectPledge->userID, $userProjectPledge->projectID, $userProjectPledge->userProjectPledgeID
+			);
+		}
+		$didSaveSucceed = $queryCommand->execute();
+
+		if ($didSaveSucceed == false)
+		{
+			die("Could not write to database.");
+		}
+		else
+		{
+			$userProjectPledgeID = mysqli_insert_id($databaseConnection);
+			if ($userProjectPledgeID != null)
+			{
+				$userProjectPledge->userProjectPledgeID = $userProjectPledgeID;
+			}
+		}
+
+		$databaseConnection->close();
+
+		return $userProjectPledge;
+	}
+
 }
 
 ?>

@@ -9,6 +9,7 @@ include("../Classes/PersistenceClientMySQL.php");
 include("../Classes/Project.php");
 include("../Classes/Session.php");
 include("../Classes/User.php");
+include("../Classes/UserProjectPledge.php");
 include("../Classes/WebClient.php");
 
 Session::start($configuration);

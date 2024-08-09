@@ -97,7 +97,8 @@
 				<table style="border:1px solid" width="100%">
 					<thead>
 						<th>Name</th>
-						<th>Pledge Amount (USD)</th>
+						<th>Pledged (USD)</th>
+						<th>Goal (USD)</th>
 					</thead>
 					<?php
 						foreach ($projectsFound as $project)
@@ -110,7 +111,16 @@
 							$tableCell = "<td><a href='Project.php?projectID=" . $projectID . "'>" . $projectName . "</a></td>";
 							$tableRow = $tableRow . $tableCell;
 
-							$tableCell = "<td>". "[todo - pledge amount]" . "</td>";
+							$pledgesInUsd = 0;
+							$pledges = $persistenceClient->userProjectPledgesGetByProjectID($projectID);
+							foreach ($pledges as $pledge)
+							{
+								$pledgesInUsd += $pledge->pledgeAmountInUsd;
+							}
+							$tableCell = "<td>$". $pledgesInUsd . "</td>";
+							$tableRow = $tableRow . $tableCell;
+
+							$tableCell = "<td>$". $project->goalInUsd . "</td>";
 							$tableRow = $tableRow . $tableCell;
 
 							$tableRow = $tableRow . "</tr>";

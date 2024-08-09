@@ -7,18 +7,18 @@ class Project
 	public $name;
 	public $goalInUsd;
 	public $isActive;
-	public $description;
 	public $dateProposed;
+	public $description;
 
-	public function __construct($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $description, $dateProposed)
+	public function __construct($projectID, $userIDOrganizer, $name, $goalInUsd, $isActive, $dateProposed, $description)
 	{
 		$this->projectID = $projectID;
 		$this->userIDOrganizer = $userIDOrganizer;
 		$this->name = $name;
 		$this->goalInUsd = $goalInUsd;
 		$this->isActive = $isActive;
-		$this->description = $description;
 		$this->dateProposed = $dateProposed;
+		$this->description = $description;
 	}
 }
 
