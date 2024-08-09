@@ -2,7 +2,7 @@
 
 <html>
 
-<head><?php PageWriter::elementHeadWrite("Products"); ?></head>
+<head><?php PageWriter::elementHeadWrite("Project Search"); ?></head>
 
 <body>
 
@@ -20,26 +20,26 @@
 			$userLoggedIn = User::dummy();
 		}
 
-		$productNamePartial = (isset($_POST["ProductNamePartial"]) ? $_POST["ProductNamePartial"] : "");
-		$productsPerPage = (isset($_POST["ProductsPerPage"]) ? $_POST["ProductsPerPage"] : 10);
+		$projectNamePartial = (isset($_POST["ProjectNamePartial"]) ? $_POST["ProjectNamePartial"] : "");
+		$projectsPerPage = (isset($_POST["ProjectsPerPage"]) ? $_POST["ProjectsPerPage"] : 10);
 		$pageNumber = (isset($_POST["PageNumber"]) ? $_POST["PageNumber"] : 1);
 		$pageIndex = $pageNumber - 1;
-		$numberOfProductsFound =
-			$persistenceClient->productsSearchCount($productNamePartial);
-		$productsFound =
-			$persistenceClient->productsSearch($productNamePartial, $productsPerPage, $pageIndex);
-		$numberOfPages = ceil($numberOfProductsFound / $productsPerPage);
+		$numberOfProjectsFound =
+			$persistenceClient->projectsSearchCount($projectNamePartial);
+		$projectsFound =
+			$persistenceClient->projectsSearch($projectNamePartial, $projectsPerPage, $pageIndex);
+		$numberOfPages = ceil($numberOfProjectsFound / $projectsPerPage);
 	?>
 
 	<div class="divCentered">
-		<label><b>Product Search:</b></label><br />
+		<label><b>Project Search:</b></label><br />
 		<br />
 		<div>
 			<div>
 				<label>Search Criteria:</label><br />
 				<form action="" method="post">
-					<label>Product Name:</label>
-					<input name="ProductNamePartial" value="<?php echo $productNamePartial; ?>"></input>
+					<label>Project Name:</label>
+					<input name="ProjectNamePartial" value="<?php echo $projectNamePartial; ?>"></input>
 					<button type="submit">Search</button>
 				</form>
 			</div>
@@ -48,22 +48,22 @@
 			<br />
 			<div>
 				<?php
-					echo($numberOfProductsFound . " products found.<br /><br />");
+					echo($numberOfProjectsFound . " projects found.<br /><br />");
 				?>
 
 				<form action="" method="post">
 
 					<label>Results per Page:</label>
 					<select
-						name="ProductsPerPage"
-						value="<?php echo $productsPerPage; ?>"
+						name="ProjectsPerPage"
+						value="<?php echo $projectsPerPage; ?>"
 						onchange="this.form.submit();"
 					>
 						<?php
 							$pageSizes = [ 10, 20, 50 ];
 							foreach ($pageSizes as $pageSizeAvailable)
 							{
-								$isPageSizeSelected = ($pageSizeAvailable == $productsPerPage);
+								$isPageSizeSelected = ($pageSizeAvailable == $projectsPerPage);
 								$pageSizeAsOption =
 									"<option value='" . $pageSizeAvailable . "' "
 									. ($isPageSizeSelected ? "selected='true'" : "")
@@ -96,33 +96,21 @@
 
 				<table style="border:1px solid" width="100%">
 					<thead>
-						<th>Image</th>
 						<th>Name</th>
-						<th>Price</th>
-						<th>Owned</th>
+						<th>Pledge Amount (USD)</th>
 					</thead>
 					<?php
-						foreach ($productsFound as $product)
+						foreach ($projectsFound as $project)
 						{
 							$tableRow = "<tr>";
 
-							$productID = $product->productID;
+							$projectID = $project->projectID;
 
-							$productImagePath = $product->imagePath;
-							$tableCell = "<td><img class='thumbnail' src='" . $productImagePath . "'></td>";
+							$projectName = $project->name;
+							$tableCell = "<td><a href='Project.php?projectID=" . $projectID . "'>" . $projectName . "</a></td>";
 							$tableRow = $tableRow . $tableCell;
 
-							$productName = $product->name;
-							$tableCell = "<td><a href='Product.php?productID=" . $productID . "'>" . $productName . "</a></td>";
-							$tableRow = $tableRow . $tableCell;
-
-							$productPrice = $product->price;
-							$tableCell = "<td>$" . $productPrice . "</td>";
-							$tableRow = $tableRow . $tableCell;
-
-							$numberOfLicensesHeld = $userLoggedIn->licenseCountForProductWithID($productID, false);
-							$tableCell = ($numberOfLicensesHeld > 0 ? $numberOfLicensesHeld : "-");
-							$tableCell = "<td>". $tableCell . "</td>";
+							$tableCell = "<td>". "[todo - pledge amount]" . "</td>";
 							$tableRow = $tableRow . $tableCell;
 
 							$tableRow = $tableRow . "</tr>";
@@ -131,9 +119,6 @@
 					?>
 				</table>
 			</div>
-		</div>
-		<br />
-		<a href='OrderDetails.php'>View Current Order</a>
 		</div>
 	</div>
 

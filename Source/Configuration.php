@@ -4,17 +4,16 @@ class Configuration
 {
 	public function __construct()
 	{
-		$this->appDirectory = "Store/Source";
+		$this->appDirectory = "Crowdfunding/Source";
 		$this->databaseServerName = "localhost";
 		$this->databaseUsername = "web";
 		$this->databasePassword = "web";
-		$this->databaseName = "Store";
-		$this->emailAddressHelp = "help@onlinestore.test";
-		$this->emailAddressNotify = "notify@onlinestore.test";
+		$this->databaseName = "Crowdfunding";
+		$this->emailAddressHelp = "help@crowdfunding.test";
+		$this->emailAddressNotify = "notify@crowdfunding.test";
 		$this->emailEnabled = false;
 		$this->errorReportingEnabled = true;
-		$this->paymentClientConfig = "{ \"type\": \"Square\", \"accessToken\": \"[redacted]\", \"applicationID\": \"[redacted]\", \"locationID\": \"[redacted]\"}";
-		$this->siteTitle = "Online Store";
+		$this->siteTitle = "Threshold Pledge Crowdfunding Site";
 
 		$this->applyToEnvironment();
 	}

@@ -31,21 +31,21 @@ class PersistenceClientMySQL
 		return $returnValue;
 	}
 
-	public function licenseGetByID($licenseID)
+	public function userProjectPledgeGetByID($userProjectPledgeID)
 	{
 		$returnValue = null;
 
 		$databaseConnection = $this->connect();
 
-		$queryText = "select * from License where LicenseID = ?";
+		$queryText = "select * from UserProjectPledge where UserProjectPledgeID = ?";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $licenseID);
+		$queryCommand->bind_param("i", $userProjectPledgeID);
 		$queryCommand->execute();
-		$queryCommand->bind_result($licenseID, $userID, $productID, $transferTypeID, $transferTarget);
+		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd);
 
 		while ($queryCommand->fetch())
 		{
-			$returnValue = new License($licenseID, $userID, $productID, $transferTypeID, $transferTarget);
+			$returnValue = new userProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd);
 			break;
 		}
 
@@ -54,52 +54,7 @@ class PersistenceClientMySQL
 		return $returnValue;
 	}
 
-	public function licensesGetByTransferTarget($username, $emailAddress)
-	{
-		$returnValues = array();
-
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from License where (TransferTypeID = 1 and TransferTarget = ?) or (TransferTypeID = 2 and TransferTarget = ?)";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("ss", $username, $emailAddress);
-		$queryCommand->execute();
-		$queryCommand->bind_result($licenseID, $userID, $productID, $transferTypeID, $transferTarget);
-
-		while ($queryCommand->fetch())
-		{
-			$license = new License($licenseID, $userID, $productID, $transferTypeID, $transferTarget);
-			$returnValues[] = $license;
-		}
-
-		$databaseConnection->close();
-
-		return $returnValues;
-	}
-
-	public function licenseTransferTypesGetAll()
-	{
-		$returnValues = array();
-
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from LicenseTransferType";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->execute();
-		$queryCommand->bind_result($transferTypeID, $name, $description);
-
-		while ($queryCommand->fetch())
-		{
-			$transferType = new LicenseTransferType($transferTypeID, $name, $description);
-			$returnValues[$transferTypeID] = $transferType;
-		}
-
-		$databaseConnection->close();
-
-		return $returnValues;
-	}
-
-	public function licenseSave($license)
+	public function userProjectPledgeSave($userProjectPledge)
 	{
 		$databaseConnection = $this->connect();
 
@@ -108,24 +63,24 @@ class PersistenceClientMySQL
 			die("Could not connect to database.");
 		}
 
-		if ($license->licenseID == null)
+		if ($userProjectPledge->userProjectPledgeID == null)
 		{
 			$queryText =
-				"insert into License (UserID, ProductID, TransferTypeID, TransferTarget)"
-				. " values (?, ?, ?, ?)";
+				"insert into UserProjectPledge (UserID, ProjectID, PledgeAmountInUsd)"
+				. " values (?, ?, ?)";
 			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 			$queryCommand->bind_param
 			(
-				"iiis", $license->userID, $license->productID, $license->transferTypeID, $license->transferTarget
+				"iid", $userProjectPledge->userID, $userProjectPledge->projectID, $userProjectPledge->pledgeAmountInUsd
 			);
 		}
 		else
 		{
-			$queryText = "update License set UserID = ?, ProductID = ?, TransferTypeID = ?, TransferTarget = ? where LicenseID = ?";
+			$queryText = "update UserProjectPledge set UserID = ?, ProjectID = ?, pledgeAmountInUsd = ? where UserProjectPledgeID = ?";
 			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 			$queryCommand->bind_param
 			(
-				"iiisi", $license->userID, $license->productID, $license->transferTypeID, $license->transferTarget, $license->licenseID
+				"iidi", $userProjectPledge->userID, $userProjectPledge->projectID, $userProjectPledge->userProjectPledgeID
 			);
 		}
 		$didSaveSucceed = $queryCommand->execute();
@@ -136,16 +91,16 @@ class PersistenceClientMySQL
 		}
 		else
 		{
-			$licenseID = mysqli_insert_id($databaseConnection);
-			if ($licenseID != null)
+			$userProjectPledgeID = mysqli_insert_id($databaseConnection);
+			if ($userProjectPledgeID != null)
 			{
-				$license->licenseID = $licenseID;
+				$userProjectPledge->userProjectPledgeID = $userProjectPledgeID;
 			}
 		}
 
 		$databaseConnection->close();
 
-		return $license;
+		return $userProjectPledge;
 	}
 
 	public function notificationSave($notification)
@@ -204,188 +159,21 @@ class PersistenceClientMySQL
 		return $notification;
 	}
 
-	public function orderSave($order)
-	{
-		$databaseConnection = $this->connect();
-
-		if ($databaseConnection->connect_error)
-		{
-			die("Could not connect to database.");
-		}
-
-		// Cannot pass function calls to bind_param directly?
-		$timeStartedAsString = $this->dateToString($order->timeStarted);
-		$timeUpdatedAsString = $this->dateToString($order->timeUpdated);
-		$timeCompletedAsString = $this->dateToString($order->timeCompleted);
-
-		if ($order->orderID == null)
-		{
-			$queryText =
-				"insert into _Order (UserID, PromotionID, Status, TimeStarted, TimeUpdated, TimeCompleted, PaymentID)"
-				. " values (?, ?, ?, ?, ?, ?, ?)";
-			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-			$queryCommand->bind_param("issssss", $order->userID, $order->promotionID, $order->status, $timeStartedAsString, $timeUpdatedAsString, $timeCompletedAsString, $order->paymentID);
-		}
-		else
-		{
-			$queryText =
-				"update _Order set UserID = ?, PromotionID = ?, Status = ?, TimeStarted = ?, TimeUpdated = ?, TimeCompleted = ?, PaymentID = ?"
-				. " where OrderID = ?";
-			$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-			$queryCommand->bind_param("issssssi", $order->userID, $order->promotionID, $order->status, $timeStartedAsString, $timeUpdatedAsString, $timeCompletedAsString, $order->paymentID, $order->orderID);
-		}
-
-		$didSaveSucceed = $queryCommand->execute();
-
-		if ($didSaveSucceed == false)
-		{
-			die("Could not write to database.");
-		}
-		else
-		{
-			$orderID = mysqli_insert_id($databaseConnection);
-			if ($orderID != null)
-			{
-				$order->orderID = $orderID;
-			}
-		}
-
-		$orderProducts = $order->productBatches;
-		foreach ($orderProducts as $productBatch)
-		{
-			$productBatch->orderID = $order->orderID;
-			$this->orderProductSave($productBatch);
-		}
-
-		$databaseConnection->close();
-
-		return $order;
-	}
-
-	public function orderGetByID($orderID)
-	{
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from _Order where OrderID = ?";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $orderID);
-		$ordersFound = $this->ordersGetByQueryCommand($queryCommand, $databaseConnection);
-		$returnValue = null;
-		if (count($ordersFound) > 0)
-		{
-			$returnValue = $ordersFound[0];
-		}
-		return $returnValue;
-	}
-
-	public function ordersGetByUserID($userID)
-	{
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from _Order where UserID = ? order by TimeStarted desc";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $userID);
-		$returnValues = $this->ordersGetByQueryCommand($queryCommand, $databaseConnection);
-		return $returnValues;
-	}
-
-	private function ordersGetByQueryCommand($queryCommand, $databaseConnection)
-	{
-		$returnValues = array();
-
-		$queryCommand->execute();
-		$queryCommand->bind_result($orderID, $userID, $promotionID, $status, $timeStarted, $timeUpdated, $timeCompleted, $paymentID);
-
-		while ($queryCommand->fetch())
-		{
-			$order = new Order($orderID, $userID, $promotionID, $status, $timeStarted, $timeUpdated, $timeCompleted, $paymentID, null);
-			$returnValues[] = $order;
-		}
-
-		$databaseConnection->close();
-
-		foreach ($returnValues as $order)
-		{
-			$orderID = $order->orderID;
-			$productBatchesInOrder = $this->orderProductsGetByOrderID($orderID);
-			$order->productBatches = $productBatchesInOrder;
-		}
-
-		return $returnValues;
-	}
-
-	public function orderProductsGetByOrderID($orderID)
-	{
-		$returnValues = array();
-
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from Order_Product where OrderID = ?";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $orderID);
-		$queryCommand->execute();
-		$queryCommand->bind_result($orderProductID, $orderID, $productID, $quantity);
-
-		while ($queryCommand->fetch())
-		{
-			$orderProduct = new Order_Product($orderProductID, $orderID, $productID, $quantity);
-			$returnValues[] = $orderProduct;
-		}
-
-		$databaseConnection->close();
-
-		return $returnValues;
-	}
-
-	public function orderProductSave($orderProduct)
-	{
-		$databaseConnection = $this->connect();
-
-		if ($databaseConnection->connect_error)
-		{
-			die("Could not connect to database.");
-		}
-
-		$queryText =
-			"insert into Order_Product (OrderID, ProductID, Quantity)"
-			. " values (?, ?, ?)";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("isi", $orderProduct->orderID, $orderProduct->productID, $orderProduct->quantity);
-		$didSaveSucceed = $queryCommand->execute();
-
-		if ($didSaveSucceed == false)
-		{
-			die("Could not write to database.");
-		}
-		else
-		{
-			$orderProductID = mysqli_insert_id($databaseConnection);
-			if ($orderProductID != null)
-			{
-				$orderProduct->orderProductID = $orderProductID;
-			}
-		}
-
-		$databaseConnection->close();
-
-		return $orderProduct;
-	}
-
-	public function productGetByID($productID)
+	public function projectGetByID($projectID)
 	{
 		$returnValue = null;
 
 		$databaseConnection = $this->connect();
 
-		$queryText = "select * from Product where ProductID = ?";
+		$queryText = "select * from Project where ProjectID = ?";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $productID);
+		$queryCommand->bind_param("i", $projectID);
 		$queryCommand->execute();
-		$queryCommand->bind_result($productID, $name, $imagePath, $price, $contentPath, $isActive);
+		$queryCommand->bind_result($projectID, $name, $goalInUsd, $isActive, $descriptin);
 
 		while ($queryCommand->fetch())
 		{
-			$returnValue = new Product($productID, $name, $imagePath, $price, $contentPath, $isActive);
+			$returnValue = new Project($projectID, $name, $goalInUsd, $isActive, $description);
 			break;
 		}
 
@@ -394,21 +182,21 @@ class PersistenceClientMySQL
 		return $returnValue;
 	}
 
-	public function productsGetAll()
+	public function projectsGetAll()
 	{
 		$returnValues = array();
 
 		$databaseConnection = $this->connect();
 
-		$queryText = "select * from Product";
+		$queryText = "select * from Project";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 		$queryCommand->execute();
-		$queryCommand->bind_result($productID, $name, $imagePath, $price, $contentPath, $isActive);
+		$queryCommand->bind_result($projectID, $name, $goalInUsd, $isActive, $description);
 
 		while ($queryCommand->fetch())
 		{
-			$product = new Product($productID, $name, $imagePath, $price, $contentPath, $isActive);
-			$returnValues[$productID] = $product;
+			$project = new Project($projectID, $name, $goalInUsd, $isActive, $description);
+			$returnValues[$projectID] = $project;
 		}
 
 		$databaseConnection->close();
@@ -416,40 +204,40 @@ class PersistenceClientMySQL
 		return $returnValues;
 	}
 
-	public function productsSearch($productNamePartial, $productsPerPage, $pageIndex)
+	public function projectsSearch($projectNamePartial, $projectsPerPage, $pageIndex)
 	{
-		if ($productsPerPage == null)
+		if ($projectsPerPage == null)
 		{
-			$productsPerPage = 1000000;
+			$projectsPerPage = 1000000;
 		}
 		if ($pageIndex == null)
 		{
 			$pageIndex = 0;
 		}
-		$pageOffsetInProducts = $pageIndex * $productsPerPage;
+		$pageOffsetInProjects = $pageIndex * $projectsPerPage;
 
 		$returnValues = array();
 
 		$databaseConnection = $this->connect();
 
-		$productNamePartial = "%" . $productNamePartial . "%";
+		$projectNamePartial = "%" . $projectNamePartial . "%";
 
 		$queryText =
-			"select * from Product"
+			"select * from Project"
 			. " where Name like ?"
 			. " and IsActive = true"
 			. " order by Name"
 			. " limit ?, ?";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("sii", $productNamePartial, $pageOffsetInProducts, $productsPerPage);
+		$queryCommand->bind_param("sii", $projectNamePartial, $pageOffsetInProjects, $projectsPerPage);
 
 		$queryCommand->execute();
-		$queryCommand->bind_result($productID, $name, $imagePath, $price, $contentPath, $isActive);
+		$queryCommand->bind_result($projectID, $name, $goalInUsd, $isActive, $description, $dateProposed);
 
 		while ($queryCommand->fetch())
 		{
-			$product = new Product($productID, $name, $imagePath, $price, $contentPath, $isActive);
-			$returnValues[$productID] = $product;
+			$project = new Project($projectID, $name, $goalInUsd, $isActive, $description, $dateProposed);
+			$returnValues[$projectID] = $project;
 		}
 
 		$databaseConnection->close();
@@ -457,81 +245,30 @@ class PersistenceClientMySQL
 		return $returnValues;
 	}
 
-	public function productsSearchCount($productNamePartial)
+	public function projectsSearchCount($projectNamePartial)
 	{
 		$databaseConnection = $this->connect();
 
-		$productNamePartial = "%" . $productNamePartial . "%";
+		$projectNamePartial = "%" . $projectNamePartial . "%";
 
 		$queryText =
-			"select count('x') from Product"
+			"select count('x') from Project"
 			. " where Name like ?"
 			. " and IsActive = true";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("s", $productNamePartial);
+		$queryCommand->bind_param("s", $projectNamePartial);
 
 		$queryCommand->execute();
-		$queryCommand->bind_result($productCount);
+		$queryCommand->bind_result($projectCount);
 
 		while ($queryCommand->fetch())
 		{
-			$returnValue = $productCount;
+			$returnValue = $projectCount;
 		}
 
 		$databaseConnection->close();
 
 		return $returnValue;
-	}
-
-	public function promotionGetByCode($promotionCode)
-	{
-		$returnValue = null;
-
-		$databaseConnection = $this->connect();
-
-		$queryText = "select * from Promotion where Code = ?";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("s", $promotionCode);
-		$queryCommand->execute();
-		$queryCommand->bind_result($promotionID, $description, $discount, $code);
-
-		while ($queryCommand->fetch())
-		{
-			$returnValue = new Promotion($promotionID, $description, $discount, $code, array() );
-			break;
-		}
-
-		$databaseConnection->close();
-
-		if ($returnValue != null)
-		{
-			$returnValue->products = $this->productsGetByPromotionID($promotionID);
-		}
-
-		return $returnValue;
-	}
-
-	private function productsGetByPromotionID($promotionID)
-	{
-		$databaseConnection = $this->connect();
-
-		$returnValues = array();
-
-		$queryText = "select p.* from Promotion_Product pp, Product p where p.ProductID = pp.ProductID and pp.PromotionID = ?";
-		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
-		$queryCommand->bind_param("i", $promotionID);
-		$queryCommand->execute();
-		$queryCommand->bind_result($productID, $name, $imagePath, $price, $contentPath);
-
-		while ($queryCommand->fetch())
-		{
-			$product = new Product($productID, $name, $imagePath, $price, $contentPath);
-			$returnValues[] = $product;
-		}
-
-		$databaseConnection->close();
-
-		return $returnValues;
 	}
 
 	public function sessionGetCurrentByUserID($userID)
@@ -674,34 +411,34 @@ class PersistenceClientMySQL
 		{
 			$queryCommand->fetch();
 
-			$licenses = $this->licensesGetByUserID($userID);
+			$pledges = $this->userProjectPledgesGetByUserID($userID);
 
 			$userFound = new User
 			(
 				$userID, $username, $emailAddress, $passwordSalt,
-				$passwordHashed, $passwordResetCode, $isActive, $licenses
+				$passwordHashed, $passwordResetCode, $isActive, $pledges
 			);
 		}
 
 		return $userFound;
 	}
 
-	public function licensesGetByUserID($userID)
+	public function userProjectPledgesGetByUserID($userID)
 	{
 		$returnValues = array();
 
 		$databaseConnection = $this->connect();
 
-		$queryText = "select * from License where UserID = ? order by ProductID";
+		$queryText = "select * from UserProjectPledge where UserID = ? order by ProjectID";
 		$queryCommand = mysqli_prepare($databaseConnection, $queryText);
 		$queryCommand->bind_param("i", $userID);
 		$queryCommand->execute();
-		$queryCommand->bind_result($licenseID, $userID, $productID, $transferTypeID, $transferTarget);
+		$queryCommand->bind_result($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
 
 		while ($row = $queryCommand->fetch())
 		{
-			$license = new License($licenseID, $userID, $productID, $transferTypeID, $transferTarget);
-			$returnValues[] = $license;
+			$pledge = new UserProjectPledge($userProjectPledgeID, $userID, $projectID, $pledgeAmountInUsd, $timePledged);
+			$returnValues[] = $pledge;
 		}
 
 		$databaseConnection->close();

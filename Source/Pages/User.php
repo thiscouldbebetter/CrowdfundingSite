@@ -20,31 +20,17 @@
 		?>
 		</label><br /><br />
 
-		<label>Licenses:</label>
+		<label>Pledges:</label>
 		<?php
-			$licensesOwned = $userLoggedIn->licenses;
-			$numberOfLicensesOwned = count($licensesOwned);
+			$pledges = $userLoggedIn->pledges;
+			$numberOfPledges = count($pledges);
 			$persistenceClient = $_SESSION["PersistenceClient"];
-			$transfersIncoming = $persistenceClient->licensesGetByTransferTarget($userLoggedIn->username, $userLoggedIn->emailAddress);
-			$numberOfTransfersIncoming = count($transfersIncoming);
-			echo("(" . $numberOfLicensesOwned . " owned, " . $numberOfTransfersIncoming . " incoming transfers) ");
-			echo("<a href='UserLicenses.php'>Details</a>");
+			echo("" . $numberOfPledges);
+			echo("<a href='UserPledges.php'>Details</a>");
 		?>
 		<br /><br />
 
-		<label>Current Order:</label>
-		<?php
-			$orderCurrent = $userLoggedIn->orderCurrent;
-			$productBatchesInOrder = $orderCurrent->productBatches;
-			$numberOfBatches = count($productBatchesInOrder);
-			echo("(" . $numberOfBatches . " item(s)) ");
-		?>
-		<a href='OrderDetails.php'>Details</a><span> </span>
-		<a href='OrderHistory.php'>History</a><br />
-
-		<br />
-
-		<a href="ProductSearch.php">Browse Available Products</a><br />
+		<a href="ProjectSearch.php">Browse Available Projects</a><br />
 		<br />
 		<a href="UserLogout.php">Log Out</a><br />
 		<a href="UserDelete.php">Delete Account</a><br />

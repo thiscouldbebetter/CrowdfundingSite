@@ -1,18 +1,16 @@
-Online Store
-============
+Threshold Pledge Crowdfunding Site
+==================================
 
-A simple e-commerce site in PHP.
+A website to allow users to propose projects and/or pledge funds to them, implemented in PHP.
+
+An example of a threshold pledge system is Kickstarter.  Unlike Kickstarter, however, this system will probably not, for the foreseeable future, support actually placing pledged funds in an escrow account, nor disbursing those funds to the project organizer after the funding threshold is reached.  Rather, it is intended to informally gauge interest in a project, with the minimum possible barrier to entry, because the author found that other crowdfunding sites put too many restrictions in the way of quickly proposing a project.  Individual contributors are assumed to be "on their honor" as to whether they will eventually be willing to actually pay or not.  Some pledgers, no doubt, will not come through, so it is best to take their claimed intentions, whether made in good faith or bad, with a healthy dose of skepticism.  It is assumed that once the funding threshold is reached, the project organizer may take more concrete steps to secure the actual payments from the pledged users.
+
+For more information on the threshold pledge system, see https://en.wikipedia.org/wiki/Threshold_pledge_system.
 
 Screenshots
 -----------
 
-![Welcome](/Screenshots/Screenshot-Welcome.png?raw=true "Welcome")
-![UserLogin](/Screenshots/Screenshot-UserLogin.png?raw=true "User Login")
-![UserDetail](/Screenshots/Screenshot-UserDetail.png?raw=true "User Detail")
-![ProductSearch](/Screenshots/Screenshot-ProductSearch.png?raw=true "Product Search")
-![ProductDetail](/Screenshots/Screenshot-ProductDetail.png?raw=true "Product Detail")
-![OrderDetail](/Screenshots/Screenshot-OrderDetail.png?raw=true "Order Detail")
-![OrderCheckout](/Screenshots/Screenshot-OrderCheckout.png?raw=true "Order Checkout")
+(todo)
 
 
 Installing and Running on Linux
@@ -26,7 +24,7 @@ Installing and Running on Linux
 6. Edit the file "Data.sql" to substitute in the required password for the "web" user, then use chmod to make the script "Database/DatabaseInitialize.sh" executable, run it, and supply the database password when prompted.
 7. Edit the file "Configuration.php" to substitute in the appropriate values.
 8. Restart the apache2 service by running "sudo service apache2 restart".
-9. Start a web browser and navigate to "http://localhost/OnlineStore".
+9. Start a web browser and navigate to "http://localhost/SiteThresholdPledgeCrowdfunding".
 
 Installing and Running on Windows
 ---------------------------------
@@ -38,7 +36,7 @@ Installing and Running on Windows
 6. Run the script "DatabaseInitialize.bat" and follow the prompts, using "localhost" as the host name, "root" as the admin username, and values of your choice for the admin and unprivileged 'web' users' passwords.
 7. Open the file "Configuration.php" in a text editor and modify its constructor to substitute in the appropriate values.  Notably, the databasePassword field should be changed from "[redacted]" to the actual password set in a previous step.
 8. Restart the Apache web server through the XAMPP control panel.
-9. Start a web browser and navigate to "http://localhost/OnlineStore".
+9. Start a web browser and navigate to "http://localhost/SiteThresholdPledgeCrowdfunding".
 
 Testing
 -------
