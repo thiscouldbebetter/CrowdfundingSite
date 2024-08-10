@@ -13,7 +13,7 @@ class Configuration
 		$this->emailAddressNotify = "notify@crowdfunding.test";
 		$this->emailEnabled = false;
 		$this->errorReportingEnabled = true;
-		$this->siteTitle = "Threshold Pledge Crowdfunding Site";
+		$this->siteTitle = "Crowdfunding Site";
 
 		$this->applyToEnvironment();
 	}

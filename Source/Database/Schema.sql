@@ -27,6 +27,7 @@ create table Session(SessionID int not null auto_increment, UserID int, DeviceAd
 /* Users */
 
 grant select on *.* to 'web'@'localhost';
+grant insert, update on Project to 'web'@'localhost';
 grant insert, update on UserProjectPledge to 'web'@'localhost';
 grant insert, update on Notification to 'web'@'localhost';
 grant insert, update on Session to 'web'@'localhost';

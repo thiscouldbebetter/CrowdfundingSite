@@ -14,7 +14,7 @@
 		<div>
 			<div>
 				<label><b>Organizer:</b></label>
-				
+
 				<?php
 					$session = $_SESSION["Session"];
 					$userID = $_Get["UserID"];
@@ -47,6 +47,7 @@
 					echo "<thead>";
 					echo "<th>Name</th>";
 					echo "<th>Date Proposed</th>";
+					echo "<th>Status</th>";
 					echo "<th>Pledged</th>";
 					echo "<th>Goal</th>";
 					echo "<th>Actions</th>";
@@ -55,6 +56,7 @@
 					{
 						$projectID = $project->projectID;
 						$projectName = $project->name;
+						$status = $project->isActive ? "Active" : "Inactive";
 						$timeProposed = strtotime( $project->timeProposed );
 						$timeProposedFormatted = date("Y/m/d", $timeProposed);
 						$pledgeAmountTotalInUsd = $persistenceClient->userProjectPledgesSumGetByProjectID($projectID);
@@ -63,9 +65,10 @@
 							"<tr>"
 							. "<td>" . $projectName . "</td>"
 							. "<td>" . $timeProposedFormatted . "</td>"
+							. "<td>" . $status . "</td>"
 							. "<td>$" . $pledgeAmountTotalInUsd . "</td>"
 							. "<td>$" . $project->goalInUsd . "</td>"
-							. "<td><a href='Project.html?projectID=$projectID'>Details</a></td>"
+							. "<td><a href='ProjectDetails.php?projectID=$projectID'>Details</a></td>"
 							. "</tr>";
 						echo($projectAsListItem);
 					}

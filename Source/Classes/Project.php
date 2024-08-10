@@ -10,7 +10,9 @@ class Project
 	public $isActive;
 	public $description;
 
-	public function __construct($projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description)
+	public function __construct(
+		$projectID, $userIDOrganizer, $name, $goalInUsd, $timeProposed, $isActive, $description
+	)
 	{
 		$this->projectID = $projectID;
 		$this->userIDOrganizer = $userIDOrganizer;

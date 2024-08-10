@@ -110,7 +110,7 @@
 							$projectID = $project->projectID;
 
 							$projectName = $project->name;
-							$tableCell = "<td><a href='Project.php?projectID=" . $projectID . "'>" . $projectName . "</a></td>";
+							$tableCell = "<td><a href='ProjectDetails.php?projectID=" . $projectID . "'>" . $projectName . "</a></td>";
 							$tableRow = $tableRow . $tableCell;
 
 							$userOrganizer = $persistenceClient->userGetByID($project->userIDOrganizer);

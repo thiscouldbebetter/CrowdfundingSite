@@ -33,9 +33,18 @@
 
 		<label>Projects Proposed:</label>
 		<?php
-			$projectsCount = $persistenceClient->projectsCountGetByUserIDOrganizer($userID);
+			$projectsCount =
+				$persistenceClient->projectsCountGetByUserIDOrganizer($userID);
 			echo("" . $projectsCount);
 			echo("<a href='UserProposals.php'>Details</a>");
+			if ($userLoggedIn->userID == $userID)
+			{
+		?>
+
+				<a href="ProjectCreate.php">Propose New Project</a>
+
+		<?php
+			}
 		?>
 		<br /><br />
 		
@@ -43,7 +52,8 @@
 		<label>Pledges Active:</label>
 		<?php
 			$persistenceClient = $_SESSION["PersistenceClient"];
-			$pledgesCount = $persistenceClient->userProjectPledgesCountGetByUserID($userID);
+			$pledgesCount =
+				$persistenceClient->userProjectPledgesCountGetByUserID($userID);
 			echo("" . $pledgesCount);
 			echo("<a href='UserPledges.php'>Details</a>");
 		?>
@@ -54,9 +64,11 @@
 		<?php
 			if ($userLoggedIn->userID == $userID)
 			{
-				echo("<br />\n");
-				echo("<a href='UserLogout.php'>Log Out</a><br />\n");
-				echo("<a href='UserDelete.php'>Delete Account</a><br />\n");
+		?>
+			<br />
+			<a href='UserLogout.php'>Log Out</a><br />
+			<a href='UserDelete.php'>Delete Account</a><br />
+		<?php
 			}
 		?>
 	</div>

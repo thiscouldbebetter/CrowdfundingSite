@@ -1,5 +1,5 @@
-Threshold Pledge Crowdfunding Site
-==================================
+Crowdfunding Site
+=================
 
 A website to allow users to propose projects and/or pledge funds to them, implemented in PHP.
 
